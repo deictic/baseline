@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProductService {
 
@@ -20,7 +19,7 @@ public class ProductService {
 
         try {
             String productName = request[1];
-            if (!productDao.productExists(productName)) {
+            if (!productDao.productExists(productName) && !productName.equals("")) {
                 productDao.addProduct(productName);
                 result = "OK";
             } else result = "ERROR";
@@ -39,8 +38,8 @@ public class ProductService {
             String productName = request[1];
             Long amount = Long.parseLong(request[2]);
             Long price = Long.parseLong(request[3]);
-            Date date = new SimpleDateFormat("dd/MM/yyyy").parse(request[4]);
-            if (productDao.productExists(productName)) {
+            Date date = new SimpleDateFormat("dd.MM.yyyy").parse(request[4]);
+            if (productDao.productExists(productName) && amount > 0 && price > 0) {
                 //calculate order
                 List<StorageEntry> relevantEntries = productDao
                         .getStorageEntryByProductAndDate(productName, date);
@@ -71,12 +70,13 @@ public class ProductService {
             String productName = request[1];
             Long amount = Long.parseLong(request[2]);
             Long price = Long.parseLong(request[3]);
-            Date date = new SimpleDateFormat("dd/MM/yyyy").parse(request[4]);
+            Date date = new SimpleDateFormat("dd.MM.yyyy").parse(request[4]);
             StorageEntry demandEntry = StorageEntry.builder()
                     .product(productName).amount(amount).price(price).date(date).build();
 
             List<StorageEntry> productList = productDao
-                    .getStorageEntriesByProductSortedByDateAndOrder(demandEntry.getProduct());
+                    .getStorageEntriesByProductAndDateSortedByDateAndOrder(demandEntry.getProduct(),
+                            demandEntry.getDate());
             if (productList.stream().map(StorageEntry::getAmount).reduce(0L, (a, b) -> a + b)
                     >= demandEntry.getAmount() && demandEntry.getAmount() > 0 && demandEntry.getPrice() > 0) {
                 Long demandAmount = demandEntry.getAmount();
@@ -100,12 +100,6 @@ public class ProductService {
                     }
 
                     totalCost += currentAmount * (demandPrice - currentEntry.getPrice());
-
-                    //logic of dealing with demand:
-                    //select lowest order
-                    //check which is greater - amount or demand
-                    //if demand is greater, calc cost, lower demand then remove entry from productList and actual list
-                    //otherwise calc cost, then lower actual amount by residual demand
                 }
 
                 productDao.addSale(Sale.builder().product(demandEntry.getProduct()).date(demandEntry.getDate())
@@ -126,7 +120,7 @@ public class ProductService {
 
         try {
             String productName = request[1];
-            Date date = new SimpleDateFormat("dd/MM/yyyy").parse(request[2]);
+            Date date = new SimpleDateFormat("dd.MM.yyyy").parse(request[2]);
             List<Sale> actualSales = productDao.findSalesByProductAndMaxDate(productName, date);
 
             if (!actualSales.isEmpty()) {
@@ -137,5 +131,25 @@ public class ProductService {
         }
 
         return result;
+    }
+
+    public void clear() {
+
+        productDao.clear();
+    }
+
+    public List<String> getProducts() {
+
+        return productDao.getProducts();
+    }
+
+    public List<StorageEntry> getActualStorageEntries() {
+
+        return productDao.getActualStorageEntries();
+    }
+
+    public List<Sale> getSales() {
+
+        return productDao.getSales();
     }
 }

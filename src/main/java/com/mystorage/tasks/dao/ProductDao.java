@@ -30,6 +30,11 @@ public class ProductDao {
         products.add(productName);
     }
 
+    public List<String> getProducts() {
+
+        return products;
+    }
+
     public List<StorageEntry> getStorageEntryByProductAndDate(String productName, Date date) {
 
         return actual.stream().filter(se -> se.getDate().equals(date))
@@ -46,10 +51,11 @@ public class ProductDao {
         actual.remove(storageEntry);
     }
 
-    public List<StorageEntry> getStorageEntriesByProductSortedByDateAndOrder(String productName) {
+    public List<StorageEntry> getStorageEntriesByProductAndDateSortedByDateAndOrder(String productName, Date date) {
 
         return actual.stream()
                 .filter(se -> se.getProduct().equals(productName))
+                .filter(se -> se.getDate().before(date))
                 .sorted(Comparator.comparing(StorageEntry::getDate).thenComparing(StorageEntry::getOrder))
                 .collect(Collectors.toList());
     }
@@ -61,7 +67,24 @@ public class ProductDao {
 
     public List<Sale> findSalesByProductAndMaxDate(String productName, Date date) {
 
-        return sales.stream().filter(s -> s.getDate().equals(date))
+        return sales.stream().filter(s -> s.getDate().before(date))
                 .filter(se -> se.getProduct().equals(productName)).collect(Collectors.toList());
+    }
+
+    public void clear() {
+
+        products.clear();
+        actual.clear();
+        sales.clear();
+    }
+
+    public List<StorageEntry> getActualStorageEntries() {
+
+        return actual;
+    }
+
+    public List<Sale> getSales() {
+
+        return sales;
     }
 }
