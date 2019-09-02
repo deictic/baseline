@@ -3,6 +3,8 @@ package com.mystorage.tasks.model;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @Builder
 public class StorageEntry {
@@ -13,7 +15,7 @@ public class StorageEntry {
 
     private Long price;
 
-    private String date;
+    private Date date;
 
     //for ordering purchases made during same day
     private Long order;

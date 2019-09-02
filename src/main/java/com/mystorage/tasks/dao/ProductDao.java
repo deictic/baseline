@@ -5,6 +5,7 @@ import com.mystorage.tasks.model.StorageEntry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class ProductDao {
         products.add(productName);
     }
 
-    public List<StorageEntry> getStorageEntryByProductAndDate(String productName, String date) {
+    public List<StorageEntry> getStorageEntryByProductAndDate(String productName, Date date) {
 
         return actual.stream().filter(se -> se.getDate().equals(date))
                 .filter(se -> se.getProduct().equals(productName)).collect(Collectors.toList());
@@ -40,11 +41,27 @@ public class ProductDao {
         actual.add(storageEntry);
     }
 
+    public void removeActualEntry(StorageEntry storageEntry) {
+
+        actual.remove(storageEntry);
+    }
+
     public List<StorageEntry> getStorageEntriesByProductSortedByDateAndOrder(String productName) {
 
         return actual.stream()
                 .filter(se -> se.getProduct().equals(productName))
                 .sorted(Comparator.comparing(StorageEntry::getDate).thenComparing(StorageEntry::getOrder))
                 .collect(Collectors.toList());
+    }
+
+    public void addSale(Sale sale) {
+
+        sales.add(sale);
+    }
+
+    public List<Sale> findSalesByProductAndMaxDate(String productName, Date date) {
+
+        return sales.stream().filter(s -> s.getDate().equals(date))
+                .filter(se -> se.getProduct().equals(productName)).collect(Collectors.toList());
     }
 }
